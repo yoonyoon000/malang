@@ -1,0 +1,143 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import SquishyScene from './components/SquishyScene.jsx';
+import ControlPanel from './components/ControlPanel.jsx';
+import { playReleasePop, playSqueezeSquish, playStrongSquish, unlockAudio } from './utils/sounds.js';
+
+const colors = ['#ff9ec8', '#94f0d4', '#ffd66e', '#a7c7ff', '#d8b4fe'];
+const shapes = ['dumpling', 'bean', 'star'];
+
+export default function App() {
+  const [isPressing, setIsPressing] = useState(false);
+  const [squeezeAmount, setSqueezeAmount] = useState(0);
+  const [forceBoost, setForceBoost] = useState(0);
+  const [toyColorIndex, setToyColorIndex] = useState(0);
+  const [shapeIndex, setShapeIndex] = useState(0);
+  const [autoMode, setAutoMode] = useState(false);
+  const [jigglePulse, setJigglePulse] = useState(0);
+  const velocityRef = useRef(0);
+  const squeezeRef = useRef(0);
+  const pressRef = useRef(false);
+  const autoRef = useRef(false);
+  const lastSoundRef = useRef(0);
+
+  useEffect(() => {
+    pressRef.current = isPressing;
+  }, [isPressing]);
+
+  useEffect(() => {
+    autoRef.current = autoMode;
+  }, [autoMode]);
+
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+
+    const tick = (now) => {
+      const dt = Math.min((now - last) / 1000, 0.04);
+      last = now;
+      const t = now / 1000;
+      const autoTarget = autoRef.current ? (Math.sin(t * 1.65) + 1) * 0.43 + 0.08 : 0;
+      const target = pressRef.current ? Math.min(1, 0.72 + forceBoost) : autoTarget;
+      const stiffness = target > squeezeRef.current ? 16 : 9;
+      const damping = target > squeezeRef.current ? 7 : 5.3;
+      const displacement = target - squeezeRef.current;
+
+      velocityRef.current += displacement * stiffness * dt;
+      velocityRef.current *= Math.exp(-damping * dt);
+      squeezeRef.current += velocityRef.current;
+      squeezeRef.current = Math.max(-0.08, Math.min(1.12, squeezeRef.current));
+
+      if (squeezeRef.current > 0.72 && now - lastSoundRef.current > 380) {
+        playStrongSquish(squeezeRef.current);
+        lastSoundRef.current = now;
+      }
+
+      setSqueezeAmount(squeezeRef.current);
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [forceBoost]);
+
+  const beginPress = useCallback(() => {
+    unlockAudio();
+    setAutoMode(false);
+    setIsPressing(true);
+    setJigglePulse((value) => value + 1);
+    playSqueezeSquish(Math.max(0.25, squeezeRef.current));
+  }, []);
+
+  const endPress = useCallback(() => {
+    setIsPressing(false);
+    setJigglePulse((value) => value + 1);
+    playReleasePop(Math.max(0.2, squeezeRef.current));
+  }, []);
+
+  const resetToy = () => {
+    setAutoMode(false);
+    setIsPressing(false);
+    setForceBoost(0);
+    velocityRef.current = -0.9;
+    setJigglePulse((value) => value + 1);
+    playReleasePop(0.7);
+  };
+
+  const squeezeHarder = () => {
+    unlockAudio();
+    setAutoMode(false);
+    setForceBoost((value) => Math.min(0.32, value + 0.11));
+    setIsPressing(true);
+    setTimeout(() => setIsPressing(false), 560);
+    setJigglePulse((value) => value + 1);
+    playStrongSquish(1);
+  };
+
+  const toggleAuto = () => {
+    unlockAudio();
+    setIsPressing(false);
+    setAutoMode((value) => !value);
+    setJigglePulse((value) => value + 1);
+  };
+
+  const squeezePercent = Math.round(Math.max(0, Math.min(1, squeezeAmount)) * 100);
+  const softnessPercent = Math.round(92 - squeezePercent * 0.22 + Math.sin(jigglePulse) * 2);
+  const status = autoMode
+    ? '자동으로 조물조물 중'
+    : isPressing || squeezeAmount > 0.55
+      ? '손 안에서 말랑하게 눌리는 중'
+      : squeezeAmount > 0.12
+        ? '천천히 통통하게 복원 중'
+        : '폭신하게 대기 중';
+
+  return (
+    <main className="app-shell">
+      <section
+        className="scene-wrap"
+        onPointerDown={beginPress}
+        onPointerUp={endPress}
+        onPointerLeave={endPress}
+        onPointerCancel={endPress}
+      >
+        <SquishyScene
+          squeezeAmount={squeezeAmount}
+          isPressing={isPressing}
+          toyColor={colors[toyColorIndex]}
+          toyShape={shapes[shapeIndex]}
+          jigglePulse={jigglePulse}
+        />
+      </section>
+      <ControlPanel
+        softness={softnessPercent}
+        force={squeezePercent}
+        status={status}
+        autoMode={autoMode}
+        onReset={resetToy}
+        onHarder={squeezeHarder}
+        onColor={() => setToyColorIndex((value) => (value + 1) % colors.length)}
+        onShape={() => setShapeIndex((value) => (value + 1) % shapes.length)}
+        onAuto={toggleAuto}
+      />
+    </main>
+  );
+}
