@@ -105,7 +105,7 @@ export default function App() {
   const status = autoMode
     ? '자동으로 조물조물 중'
     : isPressing || squeezeAmount > 0.55
-      ? '손 안에서 말랑하게 눌리는 중'
+      ? '말랑하게 납작 눌리는 중'
       : squeezeAmount > 0.12
         ? '천천히 통통하게 복원 중'
         : '폭신하게 대기 중';
@@ -121,7 +121,6 @@ export default function App() {
       >
         <SquishyScene
           squeezeAmount={squeezeAmount}
-          isPressing={isPressing}
           toyColor={colors[toyColorIndex]}
           toyShape={shapes[shapeIndex]}
           jigglePulse={jigglePulse}

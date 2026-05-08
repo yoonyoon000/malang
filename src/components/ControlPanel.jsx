@@ -1,4 +1,4 @@
-import { CircleDot, Hand, Palette, RefreshCcw, Repeat, Sparkles } from 'lucide-react';
+import { ChevronsDown, CircleDot, Palette, RefreshCcw, Repeat, Sparkles } from 'lucide-react';
 
 export default function ControlPanel({
   softness,
@@ -19,7 +19,7 @@ export default function ControlPanel({
           <strong>{softness}%</strong>
         </div>
         <div className="meter">
-          <span className="meter-label">쥐는 힘</span>
+          <span className="meter-label">누르는 힘</span>
           <strong>{force}%</strong>
         </div>
         <div className="status-pill">
@@ -32,9 +32,9 @@ export default function ControlPanel({
           <RefreshCcw />
           다시 통통하게
         </button>
-        <button className="toy-button" type="button" onClick={onHarder} title="한 번 더 강하게 쥐기">
-          <Hand />
-          더 세게 쥐기
+        <button className="toy-button" type="button" onClick={onHarder} title="한 번 더 강하게 누르기">
+          <ChevronsDown />
+          더 세게 누르기
         </button>
         <button className="toy-button" type="button" onClick={onColor} title="말랑이 색 바꾸기">
           <Palette />
