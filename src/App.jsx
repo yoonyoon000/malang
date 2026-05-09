@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SquishyScene from './components/SquishyScene.jsx';
 import ControlPanel from './components/ControlPanel.jsx';
-import { playReleasePop, playSqueezeSquish, playStrongSquish, unlockAudio } from './utils/sounds.js';
+import { playReleasePop, playSqueezeSquish, unlockAudio } from './utils/sounds.js';
 
 const colors = ['#42b9e5', '#73d7ef', '#7adbc9', '#9cbdf8', '#d6a8ff'];
 const shapes = ['dumpling', 'bean', 'star'];
@@ -12,6 +12,7 @@ export default function App() {
   const [toyColorIndex, setToyColorIndex] = useState(0);
   const [shapeIndex, setShapeIndex] = useState(0);
   const [jigglePulse, setJigglePulse] = useState(0);
+  const [resetViewSignal, setResetViewSignal] = useState(0);
   const velocityRef = useRef(0);
   const squeezeRef = useRef(0);
   const pressRef = useRef(false);
@@ -39,7 +40,7 @@ export default function App() {
       squeezeRef.current = Math.max(-0.08, Math.min(1.12, squeezeRef.current));
 
       if (squeezeRef.current > 0.72 && now - lastSoundRef.current > 380) {
-        playStrongSquish(squeezeRef.current);
+        playSqueezeSquish(squeezeRef.current);
         lastSoundRef.current = now;
       }
 
@@ -78,9 +79,11 @@ export default function App() {
           toyColor={colors[toyColorIndex]}
           toyShape={shapes[shapeIndex]}
           jigglePulse={jigglePulse}
+          resetViewSignal={resetViewSignal}
         />
       </section>
       <ControlPanel
+        onResetView={() => setResetViewSignal((value) => value + 1)}
         onColor={() => setToyColorIndex((value) => (value + 1) % colors.length)}
         onShape={() => setShapeIndex((value) => (value + 1) % shapes.length)}
       />

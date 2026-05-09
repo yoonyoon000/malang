@@ -48,7 +48,7 @@ function makeShapeGeometry(shape) {
 }
 
 function makeGelTexture() {
-  const size = 256;
+  const size = 384;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
@@ -58,10 +58,11 @@ function makeGelTexture() {
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
       const wave =
-        Math.sin(x * 0.19 + Math.sin(y * 0.08) * 2.4) * 18 +
-        Math.sin(y * 0.23 + x * 0.05) * 14 +
-        Math.sin((x + y) * 0.11) * 10;
-      const cells = Math.sin(Math.hypot(x - 128, y - 132) * 0.42) * 8;
+        Math.sin(x * 0.27 + Math.sin(y * 0.12) * 3.4) * 32 +
+        Math.sin(y * 0.31 + x * 0.08) * 27 +
+        Math.sin((x + y) * 0.18) * 21 +
+        Math.sin((x - y) * 0.24) * 16;
+      const cells = Math.sin(Math.hypot(x - size * 0.48, y - size * 0.52) * 0.54) * 18;
       const value = 128 + wave + cells;
       const index = (y * size + x) * 4;
       image.data[index] = value;
@@ -75,7 +76,7 @@ function makeGelTexture() {
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(2.5, 2.5);
+  texture.repeat.set(3.7, 3.7);
   texture.anisotropy = 8;
   texture.needsUpdate = true;
   return texture;
@@ -113,14 +114,17 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
       const contactDimple = Math.exp(-((x + 0.48) ** 2 + (z - 0.04) ** 2) * 6.5) + Math.exp(-((x - 0.46) ** 2 + (z - 0.02) ** 2) * 6.2);
       const sideBulge = 1 + sidePressure * squeeze * 0.44 + rebound * 0.18;
       const verticalSquash = 1 - squeeze * (0.38 + topPressure * 0.15) + rebound * 0.14;
-      const fineWrinkle = Math.sin(x * 34 + z * 19 + y * 8) * Math.sin(z * 27 - y * 17) * 0.006;
+      const fineWrinkle =
+        Math.sin(x * 48 + z * 28 + y * 15) *
+        Math.sin(z * 39 - y * 25 + x * 7) *
+        0.015;
       const ripple = Math.sin((x * 5.2 + z * 4.6) + t * 7.5) * squeeze * 0.025 + fineWrinkle;
 
       position.setXYZ(
         i,
         x * sideBulge + Math.sign(x || 1) * squeeze * sidePressure * 0.08 + ripple,
         y * verticalSquash - topPressure * squeeze * 0.16 + wobble * (1 - Math.abs(y)),
-        z * (1 + sidePressure * squeeze * 0.32) - contactDimple * squeeze * 0.07,
+        z * (1 + sidePressure * squeeze * 0.32) - contactDimple * squeeze * 0.07 + fineWrinkle * 0.55,
       );
     }
 
@@ -143,10 +147,10 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
         <circleGeometry args={[0.78, 64]} />
         <meshBasicMaterial color={color} transparent opacity={0.18} depthWrite={false} />
       </mesh>
-      <mesh ref={meshRef} castShadow receiveShadow geometry={geometry}>
+      <mesh ref={meshRef} geometry={geometry}>
         <meshPhysicalMaterial
           color={color}
-          roughness={0.34}
+          roughness={0.42}
           metalness={0}
           transmission={0.62}
           thickness={1.2}
@@ -158,7 +162,7 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
           sheen={0.28}
           sheenColor="#ffffff"
           bumpMap={gelTexture}
-          bumpScale={0.035}
+          bumpScale={0.095}
         />
       </mesh>
       <mesh position={[-0.18, 0.24, 0.48]} scale={[0.17, 0.055, 0.08]} rotation={[0.35, -0.4, -0.42]}>

@@ -43,4 +43,4 @@ Then enable GitHub Pages in the repository settings and select the `gh-pages` br
 
 - Drag the scene to rotate around the squishy toy.
 - Press and hold anywhere on the scene to squish the toy, then release to let it spring back.
-- Use the bottom buttons to change color or shape.
+- Use the bottom buttons to return to the front view, change color, or change shape.
