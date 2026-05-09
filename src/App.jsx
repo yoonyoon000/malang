@@ -13,6 +13,7 @@ export default function App() {
   const [shapeIndex, setShapeIndex] = useState(0);
   const [jigglePulse, setJigglePulse] = useState(0);
   const [resetViewSignal, setResetViewSignal] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const velocityRef = useRef(0);
   const squeezeRef = useRef(0);
   const pressRef = useRef(false);
@@ -21,6 +22,15 @@ export default function App() {
   useEffect(() => {
     pressRef.current = isPressing;
   }, [isPressing]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 780px)');
+    const updateMobile = () => setIsMobile(mediaQuery.matches);
+    updateMobile();
+    mediaQuery.addEventListener('change', updateMobile);
+
+    return () => mediaQuery.removeEventListener('change', updateMobile);
+  }, []);
 
   useEffect(() => {
     let raf = 0;
@@ -80,6 +90,7 @@ export default function App() {
           toyShape={shapes[shapeIndex]}
           jigglePulse={jigglePulse}
           resetViewSignal={resetViewSignal}
+          isMobile={isMobile}
         />
       </section>
       <ControlPanel
