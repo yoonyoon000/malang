@@ -84,7 +84,6 @@ function makeGelTexture() {
 
 export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse }) {
   const meshRef = useRef();
-  const glowRef = useRef();
   const geometry = useMemo(() => makeShapeGeometry(shape), [shape]);
   const basePositions = useMemo(() => Float32Array.from(geometry.attributes.position.array), [geometry]);
   const gelTexture = useMemo(() => makeGelTexture(), []);
@@ -135,30 +134,24 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
     meshRef.current.rotation.x = squeeze * 0.14 + Math.sin(t * 8) * squeeze * 0.025;
     meshRef.current.rotation.z = -squeeze * 0.08 + Math.sin(t * 7.2) * squeeze * 0.03;
 
-    if (glowRef.current) {
-      glowRef.current.scale.setScalar(1 + squeeze * 0.22 + pulseRef.current * 0.08);
-      glowRef.current.material.opacity = 0.14 + squeeze * 0.1;
-    }
   });
 
   return (
     <group position={[0, 0.05, 0.42]}>
-      <mesh ref={glowRef} position={[0, -0.09, 0]} scale={[1.18, 0.18, 0.9]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.78, 64]} />
-        <meshBasicMaterial color={color} transparent opacity={0.18} depthWrite={false} />
-      </mesh>
       <mesh ref={meshRef} geometry={geometry}>
         <meshPhysicalMaterial
           color={color}
-          roughness={0.42}
+          roughness={0.58}
           metalness={0}
-          transmission={0.62}
-          thickness={1.2}
+          transmission={0.42}
+          thickness={0.7}
           ior={1.36}
           transparent
-          opacity={0.64}
-          clearcoat={0.9}
-          clearcoatRoughness={0.22}
+          opacity={0.72}
+          clearcoat={0.35}
+          clearcoatRoughness={0.48}
+          emissive={color}
+          emissiveIntensity={0.42}
           sheen={0.28}
           sheenColor="#ffffff"
           bumpMap={gelTexture}

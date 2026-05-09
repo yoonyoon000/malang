@@ -56,11 +56,7 @@ export default function SquishyScene({ squeezeAmount, toyColor, toyShape, jiggle
       gl={{ antialias: true, alpha: true }}
     >
       <color attach="background" args={['#fff7fb']} />
-      <fog attach="fog" args={['#fff7fb', 9, 19]} />
-      <ambientLight intensity={1.75} />
-      <directionalLight position={[3.8, 5.2, 4.4]} intensity={1.65} />
-      <pointLight position={[-3.5, 3, 2]} intensity={1.75} color="#ffd6f1" />
-      <pointLight position={[2.4, 1.1, -3]} intensity={1.45} color="#b5f3ff" />
+      <ambientLight intensity={3.2} />
 
       <group position={toyPosition} rotation={[0.06, -0.18, 0]} scale={toyScale}>
         <SquishyToy squeezeAmount={squeezeAmount} color={toyColor} shape={toyShape} jigglePulse={jigglePulse} />
