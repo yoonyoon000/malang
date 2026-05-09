@@ -1,10 +1,26 @@
-import { cp, rm } from 'node:fs/promises';
+import { cp, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const source = resolve(root, 'dist', 'assets');
 const target = resolve(root, 'assets');
+const staticIndex = `<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Squishy Hand Toy</title>
+    <link rel="stylesheet" href="/malang/assets/app.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/malang/assets/app.js"></script>
+  </body>
+</html>
+`;
 
 await rm(target, { recursive: true, force: true });
 await cp(source, target, { recursive: true });
+await writeFile(resolve(root, 'dist', 'index.html'), staticIndex);
+await writeFile(resolve(root, 'dist', '.nojekyll'), '');
