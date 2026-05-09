@@ -54,13 +54,10 @@ button {
   position: fixed;
   left: 50%;
   bottom: 22px;
-  width: min(940px, calc(100vw - 28px));
+  width: auto;
   transform: translateX(-50%);
-  display: grid;
-  grid-template-columns: minmax(210px, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  padding: 14px;
+  display: block;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.74);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.66);
@@ -69,50 +66,10 @@ button {
   user-select: none;
 }
 
-.meters {
-  display: grid;
-  grid-template-columns: 118px 118px minmax(170px, 1fr);
-  gap: 10px;
-  align-items: stretch;
-}
-
-.meter,
-.status-pill {
-  min-height: 58px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(219, 193, 225, 0.62);
-  padding: 9px 11px;
-}
-
-.meter-label,
-.status-label {
-  display: block;
-  color: #746a82;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.meter strong {
-  display: block;
-  margin-top: 3px;
-  font-size: 22px;
-  line-height: 1;
-}
-
-.status-pill strong {
-  display: block;
-  margin-top: 5px;
-  font-size: 15px;
-  line-height: 1.2;
-  color: #343044;
-}
-
 .toy-buttons {
   display: flex;
   gap: 9px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .toy-button {
@@ -161,17 +118,8 @@ button {
 
 @media (max-width: 780px) {
   .control-panel {
-    grid-template-columns: 1fr;
     bottom: 12px;
-    padding: 11px;
-  }
-
-  .meters {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .status-pill {
-    grid-column: 1 / -1;
+    width: min(360px, calc(100vw - 24px));
   }
 
   .toy-buttons {

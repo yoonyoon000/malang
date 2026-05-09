@@ -1,12 +1,44 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import SquishyToy from './SquishyToy.jsx';
+
+function CameraControls() {
+  const { camera, gl } = useThree();
+  const controlsRef = useRef(null);
+
+  useEffect(() => {
+    const controls = new OrbitControls(camera, gl.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.minDistance = 2.7;
+    controls.maxDistance = 6.4;
+    controls.minPolarAngle = 0.16;
+    controls.maxPolarAngle = Math.PI * 0.78;
+    controls.target.set(0, -0.08, 0.42);
+    controls.update();
+    controlsRef.current = controls;
+
+    return () => {
+      controls.dispose();
+      controlsRef.current = null;
+    };
+  }, [camera, gl]);
+
+  useFrame(() => {
+    controlsRef.current?.update();
+  });
+
+  return null;
+}
 
 export default function SquishyScene({ squeezeAmount, toyColor, toyShape, jigglePulse }) {
   return (
     <Canvas
       shadows
       dpr={[1, 2]}
-      camera={{ position: [2.7, 2.15, 4.25], fov: 39, near: 0.1, far: 80 }}
+      camera={{ position: [2.6, 1.8, 4.15], fov: 39, near: 0.1, far: 80 }}
       gl={{ antialias: true, alpha: true }}
     >
       <color attach="background" args={['#fff7fb']} />
@@ -16,7 +48,7 @@ export default function SquishyScene({ squeezeAmount, toyColor, toyShape, jiggle
       <pointLight position={[-3.5, 3, 2]} intensity={2.65} color="#ffd6f1" />
       <pointLight position={[2.4, 1.1, -3]} intensity={1.95} color="#b5f3ff" />
 
-      <group position={[0, -0.28, 0]} rotation={[0.08, -0.22, 0]} scale={1.38}>
+      <group position={[0, -0.3, 0]} rotation={[0.06, -0.18, 0]} scale={1.45}>
         <SquishyToy squeezeAmount={squeezeAmount} color={toyColor} shape={toyShape} jigglePulse={jigglePulse} />
       </group>
 
@@ -24,6 +56,7 @@ export default function SquishyScene({ squeezeAmount, toyColor, toyShape, jiggle
         <circleGeometry args={[6, 96]} />
         <meshStandardMaterial color="#ffffff" transparent opacity={0.28} roughness={0.88} />
       </mesh>
+      <CameraControls />
     </Canvas>
   );
 }

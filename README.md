@@ -41,6 +41,6 @@ Then enable GitHub Pages in the repository settings and select the `gh-pages` br
 
 ## Controls
 
-- Press and hold anywhere on the scene to squish the toy.
-- Release to let it spring back with overshoot.
-- Use the bottom buttons to reset, squeeze harder, change color, change shape, or toggle auto squeeze mode.
+- Drag the scene to rotate around the squishy toy.
+- Press and hold anywhere on the scene to squish the toy, then release to let it spring back.
+- Use the bottom buttons to change color or shape.

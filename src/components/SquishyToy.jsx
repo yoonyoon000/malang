@@ -4,20 +4,21 @@ import * as THREE from 'three';
 
 function makeShapeGeometry(shape) {
   if (shape === 'bean') {
-    const geometry = new THREE.SphereGeometry(0.72, 64, 42);
+    const geometry = new THREE.SphereGeometry(0.72, 96, 64);
     const position = geometry.attributes.position;
     for (let i = 0; i < position.count; i += 1) {
       const x = position.getX(i);
       const y = position.getY(i);
       const z = position.getZ(i);
-      position.setXYZ(i, x * (1.08 + y * 0.08), y * 0.82, z * (0.78 + x * 0.05));
+      const bottomFlat = y < -0.46 ? -0.46 + (y + 0.46) * 0.28 : y;
+      position.setXYZ(i, x * (1.05 + y * 0.08), bottomFlat * 1.02, z * (0.82 + x * 0.05));
     }
     geometry.computeVertexNormals();
     return geometry;
   }
 
   if (shape === 'star') {
-    const geometry = new THREE.SphereGeometry(0.68, 72, 44);
+    const geometry = new THREE.SphereGeometry(0.68, 96, 64);
     const position = geometry.attributes.position;
     for (let i = 0; i < position.count; i += 1) {
       const x = position.getX(i);
@@ -25,13 +26,59 @@ function makeShapeGeometry(shape) {
       const z = position.getZ(i);
       const angle = Math.atan2(z, x);
       const ridge = 1 + Math.cos(angle * 5) * 0.085 * (1 - Math.abs(y) * 0.8);
-      position.setXYZ(i, x * ridge, y * 0.86, z * ridge);
+      const bottomFlat = y < -0.44 ? -0.44 + (y + 0.44) * 0.3 : y;
+      position.setXYZ(i, x * ridge, bottomFlat * 1.05, z * ridge);
     }
     geometry.computeVertexNormals();
     return geometry;
   }
 
-  return new THREE.SphereGeometry(0.7, 72, 48);
+  const geometry = new THREE.SphereGeometry(0.7, 112, 72);
+  const position = geometry.attributes.position;
+  for (let i = 0; i < position.count; i += 1) {
+    const x = position.getX(i);
+    const y = position.getY(i);
+    const z = position.getZ(i);
+    const bottomFlat = y < -0.5 ? -0.5 + (y + 0.5) * 0.18 : y;
+    const dome = 1 + Math.max(0, y) * 0.08;
+    position.setXYZ(i, x * dome, bottomFlat * 1.16, z * dome);
+  }
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function makeGelTexture() {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const image = ctx.createImageData(size, size);
+
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const wave =
+        Math.sin(x * 0.19 + Math.sin(y * 0.08) * 2.4) * 18 +
+        Math.sin(y * 0.23 + x * 0.05) * 14 +
+        Math.sin((x + y) * 0.11) * 10;
+      const cells = Math.sin(Math.hypot(x - 128, y - 132) * 0.42) * 8;
+      const value = 128 + wave + cells;
+      const index = (y * size + x) * 4;
+      image.data[index] = value;
+      image.data[index + 1] = value;
+      image.data[index + 2] = value;
+      image.data[index + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(image, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2.5, 2.5);
+  texture.anisotropy = 8;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse }) {
@@ -39,6 +86,7 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
   const glowRef = useRef();
   const geometry = useMemo(() => makeShapeGeometry(shape), [shape]);
   const basePositions = useMemo(() => Float32Array.from(geometry.attributes.position.array), [geometry]);
+  const gelTexture = useMemo(() => makeGelTexture(), []);
   const pulseRef = useRef(0);
 
   useEffect(() => {
@@ -65,7 +113,8 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
       const contactDimple = Math.exp(-((x + 0.48) ** 2 + (z - 0.04) ** 2) * 6.5) + Math.exp(-((x - 0.46) ** 2 + (z - 0.02) ** 2) * 6.2);
       const sideBulge = 1 + sidePressure * squeeze * 0.44 + rebound * 0.18;
       const verticalSquash = 1 - squeeze * (0.38 + topPressure * 0.15) + rebound * 0.14;
-      const ripple = Math.sin((x * 5.2 + z * 4.6) + t * 7.5) * squeeze * 0.025;
+      const fineWrinkle = Math.sin(x * 34 + z * 19 + y * 8) * Math.sin(z * 27 - y * 17) * 0.006;
+      const ripple = Math.sin((x * 5.2 + z * 4.6) + t * 7.5) * squeeze * 0.025 + fineWrinkle;
 
       position.setXYZ(
         i,
@@ -97,16 +146,19 @@ export default function SquishyToy({ squeezeAmount, color, shape, jigglePulse })
       <mesh ref={meshRef} castShadow receiveShadow geometry={geometry}>
         <meshPhysicalMaterial
           color={color}
-          roughness={0.18}
+          roughness={0.34}
           metalness={0}
-          transmission={0.34}
-          thickness={0.85}
+          transmission={0.62}
+          thickness={1.2}
+          ior={1.36}
           transparent
-          opacity={0.78}
-          clearcoat={0.8}
-          clearcoatRoughness={0.18}
-          sheen={0.42}
+          opacity={0.64}
+          clearcoat={0.9}
+          clearcoatRoughness={0.22}
+          sheen={0.28}
           sheenColor="#ffffff"
+          bumpMap={gelTexture}
+          bumpScale={0.035}
         />
       </mesh>
       <mesh position={[-0.18, 0.24, 0.48]} scale={[0.17, 0.055, 0.08]} rotation={[0.35, -0.4, -0.42]}>
